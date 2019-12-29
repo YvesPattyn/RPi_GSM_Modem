@@ -1,3 +1,5 @@
+# PDU Library is obsolete you should use PDU Class which is more accurate.
+#And offers the usage of the Python logging.
 
 from bitstring import Bits
 from bitstring import ConstBitStream
