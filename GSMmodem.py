@@ -36,7 +36,7 @@ def serialCommand(ser, cmd, message = ""):
     line = ser.readline()
   return retval
 
-logging.basicConfig(level=logging.ERROR)
+logging.basicConfig(level=logging.INFO)
 
 system('clear')
 
@@ -88,16 +88,18 @@ else:
 choice = 99
 while (choice != '0'):
   print('-----------------------------\r\n')
-  print('1. List all messages')
-  print('2. Delete one message')
-  print('3. Detele all messages')
-  print('4. Wait for incoming message')
-  print('5. Send a message')
-  print('6. Read a message')
-  print('7. Clear Screen')
-  print('8. Send PIN')
-  print('9. Display Status')
-  print('0. Exit')
+  print('1.  List all messages')
+  print('2.  Delete one message')
+  print('3.  Detele all messages')
+  print('4.  Wait for incoming message')
+  print('5.  Send a message')
+  print('6.  Read a message')
+  print('7.  Clear Screen')
+  print('8.  Send PIN')
+  print('9.  Display Status')
+  print('10. Loglevel ERROR')
+  print('11. Loglevel DEBUG')
+  print('0.  Exit')
   choice = input('Enter choice: ')
   print("")
   if (choice == '1'):
@@ -142,6 +144,8 @@ while (choice != '0'):
       sleep(2)
     system('clear')
   if (choice == '5'):
+    print("Switching to TEXT mode.")
+    cmd = "AT+CMGF=1\r\n"
     phoneNr = input('Enter phoneNr : ')
     message = input('Enter message : ')
     message = message + ascii.ctrl('Z')
@@ -208,5 +212,11 @@ while (choice != '0'):
     cmd = "AT+CPMS=?\r\n"
     print(serialCommand(ser,cmd))
 
+  if (choice == '10' ):
+    logging.basicConfig(level=logging.ERROR)
+    print("Log Level set to ERROR")
+  if (choice == '11' ):
+    logging.basicConfig(level=logging.DEBUG)
+    print("Log Level set to DEBUG")
 r.off()
 exit(0)
