@@ -70,7 +70,7 @@ class GSMModem:
         return self.serialCommand(cmd)
         
     def deleteMessage(self,messageNumber):
-        cmd ='AT+CMGD=' + messageNumber + '\r\n'
+        cmd ='AT+CMGD=%s\r\n' % messageNumber
         logging.debug(self.serialCommand(cmd))
 
     def deleteAllMessages(self):
@@ -79,6 +79,7 @@ class GSMModem:
             
     def readMessage(self,messageNumber):       
         # PDU Mode on
+        retval = "NOMSG"
         logging.debug("Switching to PDU mode.")
         cmd = "AT+CMGF=0\r\n"
         self.serialCommand(cmd)
