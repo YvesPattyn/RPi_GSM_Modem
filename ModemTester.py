@@ -4,35 +4,56 @@ from time import sleep
 import datetime
 import logging
 from LcdDisplay import lcdDisplay
+import Adafruit_DHT
+from DTH11 import DTH11
 
 LCD_LINE_1 = 0x80 # LCD RAM address for the 1st line
 LCD_LINE_2 = 0xC0 # LCD RAM address for the 2nd line
 
 logging.basicConfig(level=logging.INFO)
-print("Initialisation of the modem in progress...")
+logging.info("Initialisation of the modem in progress.")
 modem = GSMModem()
 modem.deleteAllMessages()
 
-print("Initialisation of theLCD display...")
+logging.info("Initialisation of the LCD display.")
 lcd = lcdDisplay()
-while True:
-  now = datetime.datetime.now()
-  lcd.showString("Awaiting SMS .  ",LCD_LINE_1)
-  lcd.showString( str(now.hour) + ":" + str(now.minute) + ":" + str(now.second) ,LCD_LINE_2)
-  sleep(0.2)
-  lcd.showString("Awaiting SMS .. ",LCD_LINE_1)
-  sleep(0.2)
-  lcd.showString("Awaiting SMS ...",LCD_LINE_1)
-  sleep(0.2)
-  print("READING MSG 0")
-  hexmsg = modem.readMessage(0)
-  if ("791" in hexmsg):
-      msg = GSMMessage(hexmsg)
-      print(msg.getMessage())
-  print("END OF READING MSG 0")
-  modem.deleteMessage(0)
-  sleep(0.5)
 
+logging.info("Initialisation of the DHT (Temperature and Humidity probe).")
+d = DTH11(21 ,Adafruit_DHT.DHT11)
+
+while True:
+  hexmsg = "Dummy"
+  replyNumber = "Dummy"
+  readableMessage = "DummyDummy"
+  logging.info("* Start list All Messages *")
+  modem.getAllMessages()
+  logging.info("* End list All Messages *")
+  now = datetime.datetime.now()
+  lcd.showString("Awaiting SMS ...",LCD_LINE_1)
+  lcd.showString( str(now.hour) + ":" + str(now.minute) + ":" + str(now.second) ,LCD_LINE_2)
+  for msgNumber in range(5):
+    logging.info("READING MSG %s" % msgNumber)
+    hexmsg = modem.readMessage(msgNumber)
+    logging.info("hexmsg=%s" % hexmsg)
+    if ("791" in hexmsg):
+      modem.deleteMessage(msgNumber)
+      gsmMessage = GSMMessage(hexmsg)
+      replyNumber = gsmMessage.OANum
+      # gsmMessage.dumpData()
+      readableMessage = gsmMessage.getMessage()
+      logging.info(readableMessage)
+      logging.info(replyNumber)
+      if ("TEMP" in readableMessage.upper()):
+        temp = d.getTemperature()
+        hum = d.getHumidity()
+        textMessage = 'Temp={0:0.2f}C  Humidity={1:0.2f}%'.format(temp, hum)
+        logging.info(textMessage)
+        if ("Dummy" not in replyNumber):
+          logging.info("Send Message - Temporarily Enabled.")
+          modem.sendMessage(replyNumber,textMessage)
+  
+    logging.info("END OF READING MSG %s" % msgNumber)
+  
 lcd.close()
 exit()
 

@@ -9,12 +9,12 @@ import logging
 
 class GSMModem:
     def __init__(self):
-        logging.debug('Instance of GSMModem created.')
+        logging.info('Instance of GSMModem created.')
         self.ser = serial.Serial(port="/dev/ttyUSB0",baudrate=460800,timeout=1)
         # ATtention - Set Echo Off
         logging.debug(self.serialCommand("ATE0\r\n"))
         # Preferred Message Storage
-        logging.debug("Setting Preferred Message Storage to SIM card.")
+        logging.info("Setting Preferred Message Storage to SIM card.")
         cmd = 'AT+CPMS="SM","SM","SM"\r\n'
         logging.debug(cmd)
         logging.debug(self.serialCommand(cmd))
@@ -23,17 +23,17 @@ class GSMModem:
         logging.debug(cmd)
         logging.debug(self.serialCommand(cmd))
         # Setting message intercept for Huawey
-        logging.debug("Setting New Messages Intercept")
+        logging.info("Setting New Messages Intercept")
         cmd = "AT+CNMI=2,0,0,2,1\r\n"
         logging.debug(cmd)
         logging.debug(self.serialCommand(cmd))
         # Check if PIN must be entered.
-        logging.debug("Checking PIN status.")
+        logging.info("Checking PIN status.")
         cmd = "AT+CPIN?\r\n"
         logging.debug(cmd)
         pinCheck = self.serialCommand(cmd)
         if ( ("+CPIN" in pinCheck) and ("READY" in pinCheck) ):
-          logging.debug("PIN is still active. No need to enter it.")
+          logging.info("PIN is still active. No need to enter it.")
         else:
           logging.info("PIN code is Required - Entering it now.")
           # Enter PIN code if required
@@ -62,22 +62,28 @@ class GSMModem:
     
     def getAllMessages(self):
         # Text Mode on
-        logging.debug("Switching to TEXT mode.")
+        logging.info("getAllMessages")
+        logging.info("Switching to TEXT mode.")
         cmd = "AT+CMGF=1\r\n"
         logging.debug(self.serialCommand(cmd))
         # List all messages
         cmd = 'AT+CMGL="ALL"\r\n'
-        return self.serialCommand(cmd)
+        allMessages = self.serialCommand(cmd)
+        logging.info(allMessages)
+        return allMessages
         
     def deleteMessage(self,messageNumber):
+        logging.info("deleteMessage %s" % messageNumber)
         cmd ='AT+CMGD=%s\r\n' % messageNumber
         logging.debug(self.serialCommand(cmd))
 
     def deleteAllMessages(self):
+        logging.info("deleteAllMessages")
         cmd ='AT+CMGD=1,4\r\n'
         logging.debug(self.serialCommand(cmd))
             
     def readMessage(self,messageNumber):       
+        logging.info("readMessage %s" % messageNumber)
         # PDU Mode on
         retval = "NOMSG"
         logging.debug("Switching to PDU mode.")
@@ -98,6 +104,7 @@ class GSMModem:
         return retval
 
     def sendMessage(self,phoneNr,textMessage):
+        logging.info("Sending Message %s to %s " % (textMessage, phoneNr))
         logging.debug("Switching to TEXT mode.")
         cmd = "AT+CMGF=1\r\n"
         self.ser.write(cmd.encode())
